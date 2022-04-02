@@ -1,5 +1,56 @@
-var express = require('express');
-var app = express();
+const express = require('express');
+const bodyParser = require('body-parser')
+
+const app = express();
+const port = 3000
+
+require('dotenv').config()
+
+app.use(bodyParser.urlencoded({extended: false}))
+
+app.use((req, res, next) => {
+    console.log(`${req.method} ${req.path} - ${req.ip}`);
+    next()
+})
+
+app.use('/public', express.static(`${__dirname}/public`))
+
+app.get('/', (req, res) => {
+    res.sendFile(`${__dirname}/views/index.html`)
+})
+
+app.get('/json', (req, res) => {
+    let message = 'Hello json'
+
+    res.json({
+        message: process.env.MESSAGE_STYLE == 'uppercase' ? message.toUpperCase() : message
+    })
+})
+
+app.get('/now', (req, res, next) => {
+    req.time = new Date().toString()
+    next()
+}, (req, res) => {
+    res.json({
+        time: req.time
+    })
+})
+
+app.get('/:word/echo', (req, res) => {
+    res.json({
+        echo: req.params.word
+    })
+})
+
+app.get('/name', (req, res) => {
+    res.json({
+        name: `${req.query.first} ${req.query.last}`
+    })
+}).post('/name', (req, res) => {
+    res.json({
+        name: `${req.body.first} ${req.body.last}`
+    })
+})
 
 
 
@@ -25,15 +76,4 @@ var app = express();
 
 
 
-
-
-
-
-
-
-
-
-
-
-
- module.exports = app;
+module.exports = app;
